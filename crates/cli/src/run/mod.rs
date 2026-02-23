@@ -18,7 +18,7 @@ pub struct RunArgs {
     /// Use OpenTelemetry tracing while running the project
     #[arg(long)]
     otel: bool,
-    /// Not supported yet
+    /// Run in release mode
     #[arg(short = 'r', long, hide = true)]
     release: bool,
     #[command(flatten)]
@@ -27,19 +27,20 @@ pub struct RunArgs {
 
 impl RunArgs {
     pub fn run(&self) -> anyhow::Result<()> {
+        let path = self
+            .path
+            .canonicalize()
+            .context("can't canonicalize workspace")?;
+
         let config_path = self
             .common_args
             .config
             .canonicalize()
-            .context("can't canonicalize path")?;
-
-        let path = self
-            .path
-            .canonicalize()
-            .context("can't canonicalize path")?;
+            .context("can't canonicalize config")?;
 
         let rl = run_loop::RunLoop::new(path, config_path);
         run_loop::OTEL.store(self.otel, std::sync::atomic::Ordering::Relaxed);
+        run_loop::RELEASE.store(self.release, std::sync::atomic::Ordering::Relaxed);
 
         loop {
             match rl.run(self.watch)? {

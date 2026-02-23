@@ -24,6 +24,7 @@ pub(super) struct RunLoop {
 const BASE_PATH: &str = ".cyberfabric";
 
 pub(super) static OTEL: AtomicBool = AtomicBool::new(false);
+pub(super) static RELEASE: AtomicBool = AtomicBool::new(false);
 
 impl RunLoop {
     pub(super) fn new(path: PathBuf, config_path: PathBuf) -> Self {
@@ -148,11 +149,15 @@ impl RunLoop {
 
 fn cargo_run(path: &Path) -> Command {
     let otel = OTEL.load(std::sync::atomic::Ordering::Relaxed);
+    let release = RELEASE.load(std::sync::atomic::Ordering::Relaxed);
     let cargo = std::env::var("CARGO").unwrap_or("cargo".to_owned());
     let mut cmd = Command::new(cargo);
     cmd.arg("run");
     if otel {
         cmd.arg("-F").arg("otel");
+    }
+    if release {
+        cmd.arg("-r");
     }
     cmd.current_dir(path);
     cmd
