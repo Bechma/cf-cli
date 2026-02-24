@@ -10,7 +10,8 @@ pub struct InitArgs {
     /// Verbose output
     #[arg(short = 'v', long)]
     verbose: bool,
-    #[arg(long = "local-path", conflicts_with_all = ["git", "subfolder", "branch"])]
+    /// Path to a local template (instead of git)
+    #[arg(long, conflicts_with_all = ["git", "subfolder", "branch"])]
     local_path: Option<String>,
     /// url to the git repo
     #[arg(
