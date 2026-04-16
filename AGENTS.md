@@ -1,6 +1,6 @@
 ## General
 
-Always prefer `cargo clippy` over cargo check.
+Always prefer `cargo clippy --all-features` over cargo check.
 
 Always format the code with `cargo fmt` and run the test suite with `cargo test` before finalizing if any rust code was
 touched.

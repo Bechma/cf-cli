@@ -62,9 +62,10 @@ cyberfabric
 
 ## Shared Argument Patterns
 
-- **[`-p, --path <PATH>`]** Optional workspace path. When provided to `config ...`, `build`, and `run` commands, the CLI
-  immediately changes the current working directory to this directory. Relative config paths and generated project
-  locations then resolve from that directory. When omitted, the current working directory is left unchanged.
+- **[`-p, --path <PATH>`]** Optional workspace path. When provided to `config ...`, `build`, `run`, and `lint`, the CLI
+  immediately changes the current working directory to this directory. Relative config paths, generated project
+  locations, and workspace-scoped lint resolution then resolve from that directory. When omitted, the current working
+  directory is left unchanged.
 - **[`-c, --config <PATH>`]** Config file path. This is required for `config ...`, `build`, and `run` commands because
   there is no default. For `build` and `run`, the CLI forwards this path to the generated server through the
   `CF_CLI_CONFIG` environment variable.
@@ -658,23 +659,38 @@ cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --name d
 
 ### `lint`
 
-Declared in the CLI but **currently unimplemented**.
+Run workspace linting helpers from the selected workspace directory.
 
 Synopsis:
 
 ```bash
-cyberfabric lint [--clippy] [--dylint] [--pattern <TEXT>]
+cyberfabric lint [-p <PATH>] [--clippy] [--dylint]
 ```
 
 Arguments:
 
-- **[`--clippy`]**
-- **[`--dylint`]**
-- **[`--pattern <TEXT>`]**
+- **[`-p, --path <PATH>`]** Optional workspace directory; changes the current working directory while Clap parses it
+- **[`--clippy`]** Accepted by the CLI, but currently has no effect by itself
+- **[`--dylint`]** Runs embedded Dylint rules against the workspace rooted at the current or selected directory
 
-Current status:
+Behavior:
 
-- **[placeholder only]** Calling this subcommand currently reaches `unimplemented!("Not implemented yet")`
+- **[path activation]** If `-p/--path` is provided, it changes the current working directory
+- **[workspace-scoped dylint]** Dylint resolves the workspace from the current working directory, so `-p/--path` is the
+  way to lint another workspace without manually changing directories
+- **[toolchain bootstrap]** Before running Dylint, the CLI ensures the toolchains required by the embedded lint dylibs
+  are installed
+- **[clippy flag pending]** `--clippy` is parsed, but the current implementation does not invoke Clippy yet
+
+Examples:
+
+```bash
+cyberfabric lint --dylint
+```
+
+```bash
+cyberfabric lint -p /tmp/cf-demo --dylint
+```
 
 ### `test`
 
@@ -728,7 +744,10 @@ cyberfabric docs --verbose tokio::sync
 - **[`-c/--config` is mandatory]** For `config ...`, `build`, and `run`
 - **[generated servers expect `CF_CLI_CONFIG`]** `cyberfabric run` sets it for you, but manual execution of
   `.cyberfabric/<name>/` or its compiled binary must provide it explicitly
-- **[`lint` and `test` are not ready]** They are part of the CLI surface but currently panic at runtime
+- **[`lint --clippy` is not wired yet]** The flag is accepted, but the current implementation does not invoke Clippy
+- **[`lint --dylint` needs the feature build]** Without the `dylint-rules` feature enabled, it currently reaches
+  `unimplemented!`
+- **[`test` is not ready]** It is part of the CLI surface but currently panics at runtime
 - **[`tools` can mutate your system]** It may install `rustup` or rustup components
 - **[`docs --registry`]** Only `crates.io` is supported
 - **[`docs`]** Accepts a single query, and that query is only optional when `--clean` is used by itself
@@ -753,7 +772,7 @@ cyberfabric config db edit <name> [-p <workspace>] -c <config> ...
 cyberfabric config db rm <name> [-p <workspace>] -c <config>
 
 cyberfabric docs [-p <path>] [--version <version>] [--clean] [<query>]
+cyberfabric lint [-p <workspace>] [--clippy] [--dylint]
 cyberfabric tools --all
 cyberfabric run [-p <workspace>] -c <config> [--name <name>] [--watch]
 cyberfabric build [-p <workspace>] -c <config> [--name <name>]
-```

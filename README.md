@@ -109,13 +109,23 @@ CF_CLI_CONFIG=/tmp/cf-demo/config/quickstart.yml cargo run --manifest-path /tmp/
 
 - `docs` resolves Rust source for crates, modules, and items from the workspace, local cache, or `crates.io`
 
+### Linting
+
+- `lint -p <PATH> --dylint` runs the embedded CyberFabric Dylint rules against the workspace rooted at the current or
+  selected directory
+- `lint` uses `-p/--path` the same way as other workspace-aware commands: it changes the current working directory
+  before resolving the target workspace
+- `lint --clippy` is currently parsed but not wired to invoke Clippy yet
+
+If the CLI is built without the `dylint-rules` feature, `lint --dylint` currently reaches its fallback
+`unimplemented!` path.
+
 ### Tool bootstrap
 
 - `tools` installs or upgrades `rustup`, `rustfmt`, and `clippy`
 
 ### Current placeholders
 
-- `lint` is declared but not implemented yet
 - `test` is declared but not implemented yet
 
 ## Command overview

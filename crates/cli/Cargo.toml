@@ -19,6 +19,9 @@ path = "src/main.rs"
 name = "cargo-cyberfabric"
 path = "src/cargo_main.rs"
 
+[features]
+dylint-rules = ["dylint"]
+
 [dependencies]
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
@@ -37,10 +40,17 @@ tar = { workspace = true }
 toml = { workspace = true }
 toml_edit = { workspace = true }
 semver = { workspace = true }
+tempfile = { workspace = true }
+dylint = { workspace = true, optional = true }
 
 [lints]
 workspace = true
 
 [dev-dependencies]
-tempfile.workspace = true
+tempfile = { workspace = true }
 module-parser = { workspace = true, features = ["test-utils"] }
+
+[build-dependencies]
+anyhow = { workspace = true }
+toml.workspace = true
+
