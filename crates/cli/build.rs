@@ -1,5 +1,6 @@
 #[cfg(feature = "dylint-rules")]
 use anyhow::{Context, bail};
+#[cfg(feature = "dylint-rules")]
 use std::fs;
 #[cfg(feature = "dylint-rules")]
 use std::path::{Path, PathBuf};
@@ -10,21 +11,29 @@ use std::process::Command;
 const LINTS_REPO_URL: &str = "https://github.com/cyberfabric/cyberfabric-core.git";
 
 #[cfg(feature = "dylint-rules")]
+const LINTS_REPO_REVISION: &str = "0a514ffc4b6a1eb32c3cf0920387d5bc42c852a3";
+
+#[cfg(feature = "dylint-rules")]
+mod ensure_toolchain_installed_shared {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/shared/ensure_toolchain_installed.rs"
+    ));
+}
+
+#[cfg(feature = "dylint-rules")]
+use ensure_toolchain_installed_shared::ensure_toolchain_installed;
+
+#[cfg(feature = "dylint-rules")]
 fn build_dylint_rules() -> anyhow::Result<()> {
-    use anyhow::{Context, bail};
     use std::env;
     use std::fmt::Write as _;
-    use std::fs;
 
     let out_dir = PathBuf::from(env::var("OUT_DIR")?);
     let lints_dir = ensure_lints_dir(&out_dir)?;
     let lint_build_dir = out_dir.join("lint_build");
 
     emit_rerun_markers(&lints_dir);
-
-    if lint_build_dir.exists() {
-        return Ok(());
-    }
 
     // -- Toolchain detection ------------------------------------------------
     let channel = read_toolchain_channel(&lints_dir)?;
@@ -61,32 +70,34 @@ fn build_dylint_rules() -> anyhow::Result<()> {
     // that the outer stable `cargo build` injects — in particular `RUSTC`,
     // `CARGO`, `RUSTFLAGS`, and `RUSTUP_TOOLCHAIN` — so the inner build
     // cannot accidentally inherit a stable toolchain.
-    let status = Command::new("rustup")
-        .args([
-            "run",
-            &channel,
-            "cargo",
-            "build",
-            "--release",
-            "--workspace",
-            "--manifest-path",
-        ])
-        .arg(lints_dir.join("Cargo.toml"))
-        .arg("--target-dir")
-        .arg(&lint_build_dir)
-        .env_remove("RUSTUP_TOOLCHAIN")
-        .env_remove("RUSTC")
-        .env_remove("RUSTC_WRAPPER")
-        .env_remove("RUSTC_WORKSPACE_WRAPPER")
-        .env_remove("RUSTDOC")
-        .env_remove("CARGO")
-        .env_remove("RUSTFLAGS")
-        .env_remove("CARGO_ENCODED_RUSTFLAGS")
-        .status()
-        .context("failed to spawn cargo build for lint workspace")?;
+    if !lint_build_dir.exists() {
+        let status = Command::new("rustup")
+            .args([
+                "run",
+                &channel,
+                "cargo",
+                "build",
+                "--release",
+                "--workspace",
+                "--manifest-path",
+            ])
+            .arg(lints_dir.join("Cargo.toml"))
+            .arg("--target-dir")
+            .arg(&lint_build_dir)
+            .env_remove("RUSTUP_TOOLCHAIN")
+            .env_remove("RUSTC")
+            .env_remove("RUSTC_WRAPPER")
+            .env_remove("RUSTC_WORKSPACE_WRAPPER")
+            .env_remove("RUSTDOC")
+            .env_remove("CARGO")
+            .env_remove("RUSTFLAGS")
+            .env_remove("CARGO_ENCODED_RUSTFLAGS")
+            .status()
+            .context("failed to spawn cargo build for lint workspace")?;
 
-    if !status.success() {
-        bail!("cargo build failed for lint workspace");
+        if !status.success() {
+            bail!("cargo build failed for lint workspace");
+        }
     }
 
     // -- Copy dylibs with versioned names -----------------------------------
@@ -133,9 +144,9 @@ fn build_dylint_rules() -> anyhow::Result<()> {
 
     // -- Generate embedded-libs source file --------------------------------
     // Build a `generated_libs.rs` that hard-codes every versioned dylib as
-    // raw bytes via `include_bytes!`.  main.rs includes this file and writes
-    // the bytes to a temp directory at runtime, so the binary is fully
-    // self-contained.
+    // raw bytes via `include_bytes!`.  `crates/cli/src/lint/mod.rs` includes
+    // // this file and writes the bytes to a temp directory at runtime, so the
+    // binary is fully self-contained
     let mut src = String::from("/// Dylib files embedded at compile time.\n");
     src.push_str("pub const LIBS: &[(&str, &[u8])] = &[\n");
 
@@ -163,30 +174,44 @@ fn build_dylint_rules() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     #[cfg(feature = "dylint-rules")]
-    if let Err(error) = build_dylint_rules() {
-        panic!("{error:#}");
-    }
+    build_dylint_rules()?;
+    Ok(())
 }
 
 #[cfg(feature = "dylint-rules")]
 fn clone_lints_repo(repo_dir: &Path) -> anyhow::Result<()> {
     let status = Command::new("git")
-        .args([
-            "clone",
-            "--depth",
-            "1",
-            "--branch",
-            "main",
-            crate::LINTS_REPO_URL,
-        ])
+        .args(["clone", "--no-checkout", LINTS_REPO_URL])
         .arg(repo_dir)
         .status()
         .context("failed to clone cyberfabric-core")?;
 
     if !status.success() {
         bail!("git clone failed for {LINTS_REPO_URL}");
+    }
+
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(repo_dir)
+        .args(["fetch", "--depth", "1", "origin", LINTS_REPO_REVISION])
+        .status()
+        .with_context(|| format!("failed to fetch pinned revision {LINTS_REPO_REVISION}"))?;
+
+    if !status.success() {
+        bail!("git fetch failed for revision {LINTS_REPO_REVISION}");
+    }
+
+    let status = Command::new("git")
+        .arg("-C")
+        .arg(repo_dir)
+        .args(["checkout", "--detach", "FETCH_HEAD"])
+        .status()
+        .with_context(|| format!("failed to checkout pinned revision {LINTS_REPO_REVISION}"))?;
+
+    if !status.success() {
+        bail!("git checkout failed for revision {LINTS_REPO_REVISION}");
     }
 
     Ok(())
@@ -224,45 +249,6 @@ fn ensure_lints_dir(out_dir: &Path) -> anyhow::Result<PathBuf> {
     }
 
     Ok(lints_dir)
-}
-
-#[cfg(feature = "dylint-rules")]
-fn ensure_toolchain_installed(toolchain: &str) -> anyhow::Result<()> {
-    let installed = Command::new("rustup")
-        .args(["toolchain", "list"])
-        .output()
-        .context("failed to list installed rustup toolchains")?;
-
-    if !installed.status.success() {
-        bail!(
-            "rustup toolchain list failed: {}",
-            String::from_utf8_lossy(&installed.stderr)
-        );
-    }
-
-    let installed = String::from_utf8(installed.stdout)?;
-    let installed_prefix = format!("{toolchain}-");
-    if installed
-        .lines()
-        .filter_map(|line| line.split_whitespace().next())
-        .any(|installed| installed == toolchain || installed.starts_with(&installed_prefix))
-    {
-        return Ok(());
-    }
-
-    let install = Command::new("rustup")
-        .args(["toolchain", "install", toolchain, "--profile", "minimal"])
-        .output()
-        .with_context(|| format!("failed to install rustup toolchain `{toolchain}`"))?;
-
-    if !install.status.success() {
-        bail!(
-            "rustup toolchain install failed for `{toolchain}`: {}",
-            String::from_utf8_lossy(&install.stderr)
-        );
-    }
-
-    Ok(())
 }
 
 #[cfg(feature = "dylint-rules")]

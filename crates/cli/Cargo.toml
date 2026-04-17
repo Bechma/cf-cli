@@ -20,7 +20,8 @@ name = "cargo-cyberfabric"
 path = "src/cargo_main.rs"
 
 [features]
-dylint-rules = ["dylint"]
+default = []
+dylint-rules = ["dep:dylint"]
 
 [dependencies]
 anyhow = { workspace = true }
@@ -47,7 +48,6 @@ dylint = { workspace = true, optional = true }
 workspace = true
 
 [dev-dependencies]
-tempfile = { workspace = true }
 module-parser = { workspace = true, features = ["test-utils"] }
 
 [build-dependencies]

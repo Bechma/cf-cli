@@ -3,14 +3,23 @@ use anyhow::Result;
 use clap::Args;
 
 #[cfg(feature = "dylint-rules")]
-use anyhow::{Context, bail};
+use anyhow::Context;
 #[cfg(feature = "dylint-rules")]
 use std::collections::BTreeSet;
 #[cfg(feature = "dylint-rules")]
 use std::io::Write;
 use std::path::PathBuf;
+
 #[cfg(feature = "dylint-rules")]
-use std::process::Command;
+mod ensure_toolchain_installed_shared {
+    include!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/shared/ensure_toolchain_installed.rs"
+    ));
+}
+
+#[cfg(feature = "dylint-rules")]
+use ensure_toolchain_installed_shared::ensure_toolchain_installed;
 
 #[derive(Args)]
 pub struct LintArgs {
@@ -51,50 +60,11 @@ fn embedded_toolchains() -> Result<BTreeSet<String>> {
 }
 
 #[cfg(feature = "dylint-rules")]
-fn ensure_toolchain_installed(toolchain: &str) -> Result<()> {
-    let installed = Command::new("rustup")
-        .args(["toolchain", "list"])
-        .output()
-        .context("failed to list installed rustup toolchains")?;
-
-    if !installed.status.success() {
-        bail!(
-            "rustup toolchain list failed: {}",
-            String::from_utf8_lossy(&installed.stderr)
-        );
-    }
-
-    let installed = String::from_utf8(installed.stdout)?;
-    let installed_prefix = format!("{toolchain}-");
-    if installed
-        .lines()
-        .filter_map(|line| line.split_whitespace().next())
-        .any(|installed| installed == toolchain || installed.starts_with(&installed_prefix))
-    {
-        return Ok(());
-    }
-
-    let install = Command::new("rustup")
-        .args(["toolchain", "install", toolchain, "--profile", "minimal"])
-        .output()
-        .with_context(|| format!("failed to install rustup toolchain `{toolchain}`"))?;
-
-    if !install.status.success() {
-        bail!(
-            "rustup toolchain install failed for `{toolchain}`: {}",
-            String::from_utf8_lossy(&install.stderr)
-        );
-    }
-
-    Ok(())
-}
-
-#[cfg(feature = "dylint-rules")]
 fn run_dylint() -> Result<()> {
     // Write every embedded dylib to a per-run temp directory so dylint can
-    // dlopen them.  The temp dir (and its contents) is removed automatically
-    // when `tmp_dir` drops at the end of main, which is safe because dylint
-    // has already finished using the files by then.
+    // dlopen them. The temp dir (and its contents) is removed when `tmp_dir`
+    // drops at the end of this function, which is safe because `dylint::run`
+    // is synchronous and has already finished using the files by then.
     let tmp_dir = tempfile::tempdir().context("could not create temp dir for dylibs")?;
 
     for toolchain in embedded_toolchains()? {
@@ -138,5 +108,5 @@ fn run_dylint() -> Result<()> {
 
 #[cfg(not(feature = "dylint-rules"))]
 fn run_dylint() -> Result<()> {
-    unimplemented!("dylint-rules feature not enabled")
+    anyhow::bail!("dylint-rules feature not enabled")
 }
