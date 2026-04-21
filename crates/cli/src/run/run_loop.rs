@@ -19,6 +19,7 @@ pub(super) struct RunLoop {
 }
 
 pub(super) static OTEL: AtomicBool = AtomicBool::new(false);
+pub(super) static FIPS: AtomicBool = AtomicBool::new(false);
 pub(super) static RELEASE: AtomicBool = AtomicBool::new(false);
 
 impl RunLoop {
@@ -169,8 +170,9 @@ impl RunLoop {
 
 fn cargo_run(path: &Path, config_path: &Path) -> Command {
     let otel = OTEL.load(std::sync::atomic::Ordering::Relaxed);
+    let fips = FIPS.load(std::sync::atomic::Ordering::Relaxed);
     let release = RELEASE.load(std::sync::atomic::Ordering::Relaxed);
-    common::cargo_command("run", path, config_path, otel, release)
+    common::cargo_command("run", path, config_path, otel, fips, release)
 }
 
 fn cargo_run_loop(cargo_dir: &Path, config_path: &Path, signal_rx: &mpsc::Receiver<RunSignal>) {

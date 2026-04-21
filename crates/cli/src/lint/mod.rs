@@ -80,7 +80,7 @@ impl LintArgs {
         }
 
         #[cfg(not(feature = "dylint-rules"))]
-        if self.dylint {
+        if selection.dylint {
             run_dylint()?;
         }
 
@@ -206,6 +206,26 @@ mod tests {
         assert!(!selection.all);
         assert!(!selection.clippy);
         assert!(selection.dylint);
+    }
+
+    #[test]
+    fn strict_with_clippy_is_accepted() {
+        let cli = TestCli::try_parse_from(["cyberfabric", "--clippy", "--strict"])
+            .expect("lint args should parse");
+
+        cli.lint
+            .validate()
+            .expect("strict with clippy should be accepted");
+    }
+
+    #[test]
+    fn strict_with_all_is_accepted() {
+        let cli = TestCli::try_parse_from(["cyberfabric", "--all", "--strict"])
+            .expect("lint args should parse");
+
+        cli.lint
+            .validate()
+            .expect("strict with all should be accepted");
     }
 
     #[test]

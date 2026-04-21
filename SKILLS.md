@@ -559,7 +559,7 @@ Generate a server project under `.cyberfabric/<name>/` and run it.
 Synopsis:
 
 ```bash
-cargo cyberfabric run -c <CONFIG> [-p <PATH>] [--name <NAME>] [--watch] [--otel] [--release] [--clean]
+cargo cyberfabric run -c <CONFIG> [-p <PATH>] [--name <NAME>] [--watch] [--otel] [--fips] [--release] [--clean]
 ```
 
 Arguments:
@@ -569,6 +569,7 @@ Arguments:
 - **[`--name <NAME>`]** Override the generated server project and binary name; defaults to the config filename stem
 - **[`-w, --watch`]** Re-run when watched inputs change
 - **[`--otel`]** Pass Cargo feature `otel`
+- **[`--fips`]** Pass Cargo feature `fips`
 - **[`-r, --release`]** Use release mode
 - **[`--clean`]** Remove `.cyberfabric/<name>/Cargo.lock` before running
 
@@ -583,6 +584,7 @@ Behavior:
 - **[runtime config handoff]** The generated `src/main.rs` reads the config path from `CF_CLI_CONFIG`, and
   `cyberfabric run` sets that environment variable automatically before invoking `cargo run`
 - **[loads config dependencies]** Builds dependencies from the config and local module metadata
+- **[feature passthrough]** `--otel` and `--fips` enable the generated project's matching Cargo features
 - **[runs inside `.cyberfabric/<name>`]** Executes `cargo run` in the generated directory
 - **[watch mode]** Restarts on config changes, workspace `Cargo.toml` changes, and changes in path-based dependencies
 - **[dependency watch management]** Reconciles watched dependency paths when config dependencies change
@@ -600,7 +602,7 @@ cargo cyberfabric run -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --wa
 ```
 
 ```bash
-cargo cyberfabric run -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --release --clean
+cargo cyberfabric run -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --fips --release --clean
 ```
 
 ```bash
@@ -614,7 +616,7 @@ Generate a server project under `.cyberfabric/<name>/` and build it.
 Synopsis:
 
 ```bash
-cyberfabric build -c <CONFIG> [-p <PATH>] [--name <NAME>] [--otel] [--release] [--clean]
+cyberfabric build -c <CONFIG> [-p <PATH>] [--name <NAME>] [--otel] [--fips] [--release] [--clean]
 ```
 
 Arguments:
@@ -623,6 +625,7 @@ Arguments:
 - **[`-p, --path <PATH>`]** Optional workspace directory
 - **[`--name <NAME>`]** Override the generated server project and binary name; defaults to the config filename stem
 - **[`--otel`]** Pass Cargo feature `otel`
+- **[`--fips`]** Pass Cargo feature `fips`
 - **[`-r, --release`]** Use release mode
 - **[`--clean`]** Remove `.cyberfabric/<name>/Cargo.lock` before building
 
@@ -633,6 +636,7 @@ Behavior:
   `.cyberfabric/quickstart/`; `--name` overrides that default
 - **[path activation]** If `-p/--path` is provided, Clap changes the current working directory while parsing that value,
   before `-c/--config` is resolved and `.cyberfabric/<name>/` is generated
+- **[feature passthrough]** `--otel` and `--fips` enable the generated project's matching Cargo features
 - **[builds inside `.cyberfabric/<name>`]** Executes `cargo build` in the generated directory
 - **[runtime config source]** The generated server no longer embeds the config path; the resulting binary reads it from
   `CF_CLI_CONFIG` when you execute it
@@ -650,7 +654,7 @@ cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --releas
 ```
 
 ```bash
-cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --clean
+cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --fips --clean
 ```
 
 ```bash

@@ -56,6 +56,9 @@ pub struct BuildRunArgs {
     /// Use OpenTelemetry tracing
     #[arg(long)]
     pub otel: bool,
+    /// Enable FIPS mode
+    #[arg(long)]
+    pub fips: bool,
     /// Build/run in release mode
     #[arg(short = 'r', long)]
     pub release: bool,
@@ -129,6 +132,7 @@ pub fn cargo_command(
     path: &Path,
     config_path: &Path,
     otel: bool,
+    fips: bool,
     release: bool,
 ) -> Command {
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
@@ -137,6 +141,9 @@ pub fn cargo_command(
     cmd.env(CONFIG_PATH_ENV_VAR, config_path.as_os_str());
     if otel {
         cmd.arg("-F").arg("otel");
+    }
+    if fips {
+        cmd.arg("-F").arg("fips");
     }
     if release {
         cmd.arg("-r");
@@ -295,7 +302,10 @@ fn make_absolute_paths_relative(dep: &CargoTomlDependency, workspace: &str) -> C
                         .map(Path::to_path_buf)
                 })
         } else {
-            None
+            // Workspace-relative paths are written relative to the workspace
+            // root, so they need the same ../.. prefix as stripped absolute
+            // paths when rewritten into the generated project.
+            Some(dependency_path.to_path_buf())
         };
 
         if let Some(stripped) = stripped {
@@ -383,8 +393,9 @@ fn prepare_cargo_server_main(dependencies: &CargoTomlDependencies) -> String {
 #[cfg(test)]
 mod tests {
     use super::{
-        generate_server_structure, generated_project_dir, make_absolute_paths_relative,
-        merge_module_metadata, prepare_cargo_server_main, resolve_generated_project_name,
+        cargo_command, generate_server_structure, generated_project_dir,
+        make_absolute_paths_relative, merge_module_metadata, prepare_cargo_server_main,
+        resolve_generated_project_name,
     };
     use module_parser::{
         Capability, CargoTomlDependencies, CargoTomlDependency, ConfigModuleMetadata,
@@ -396,6 +407,16 @@ mod tests {
     use tempfile::TempDir;
 
     static CURRENT_DIR_LOCK: LazyLock<Mutex<()>> = LazyLock::new(|| Mutex::new(()));
+
+    struct CwdRestoreGuard {
+        original_dir: std::path::PathBuf,
+    }
+
+    impl Drop for CwdRestoreGuard {
+        fn drop(&mut self) {
+            let _ = env::set_current_dir(&self.original_dir);
+        }
+    }
 
     fn write_package(temp_dir: &TempDir, relative_path: &str, package_name: &str) {
         temp_dir.write(
@@ -483,6 +504,21 @@ path = "src/lib.rs"
     }
 
     #[test]
+    fn cargo_command_passes_selected_generated_project_features() {
+        let config_path = Path::new("/tmp/config.yml");
+        let cargo_dir = Path::new("/tmp/generated");
+
+        let command = cargo_command("run", cargo_dir, config_path, true, true, true);
+        let args = command
+            .get_args()
+            .map(|arg| arg.to_string_lossy().into_owned())
+            .collect::<Vec<_>>();
+
+        assert_eq!(args, vec!["run", "-F", "otel", "-F", "fips", "-r"]);
+        assert_eq!(command.get_current_dir(), Some(cargo_dir));
+    }
+
+    #[test]
     fn make_absolute_paths_relative_rewrites_workspace_paths() {
         let dependency = CargoTomlDependency {
             path: Some("/tmp/workspace/crates/local-module".to_owned()),
@@ -503,11 +539,25 @@ path = "src/lib.rs"
     }
 
     #[test]
+    fn make_absolute_paths_relative_rewrites_workspace_relative_paths() {
+        let dependency = CargoTomlDependency {
+            path: Some("crates/local-module".to_owned()),
+            ..Default::default()
+        };
+
+        let rewritten = make_absolute_paths_relative(&dependency, "/tmp/workspace");
+
+        assert_eq!(rewritten.path.as_deref(), Some("../../crates/local-module"));
+    }
+
+    #[test]
     fn generate_server_structure_writes_existing_relative_dependency_paths() {
         let _guard = CURRENT_DIR_LOCK
             .lock()
             .expect("current-dir test lock should not be poisoned");
-        let original_dir = env::current_dir().expect("current dir should be available");
+        let _cwd_guard = CwdRestoreGuard {
+            original_dir: env::current_dir().expect("current dir should be available"),
+        };
         let temp_dir = TempDir::new().expect("temp dir should be created");
 
         write_package(&temp_dir, "crates/anyhow", "anyhow");
@@ -585,7 +635,6 @@ resolver = "3"
             Ok(())
         })();
 
-        env::set_current_dir(&original_dir).expect("working directory should be restored");
         result.expect("generate_server_structure should rewrite dependency paths");
     }
 }

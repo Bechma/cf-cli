@@ -38,6 +38,15 @@ impl AppConfig {
     pub fn create_dependencies(self) -> anyhow::Result<CargoTomlDependencies> {
         let mut dependencies = CargoTomlDependencies::new();
         for (name, module) in self.modules {
+            if matches!(
+                module.runtime.as_ref().map(|r| &r.mod_type),
+                Some(RuntimeKind::Oop)
+            ) {
+                // Out-of-process modules ship their own executable and only
+                // contribute execution config, so they don't require Cargo
+                // metadata for the generated server.
+                continue;
+            }
             let Some(metadata) = module.metadata else {
                 bail!("module '{name}' doesn't have metadata associated, please review");
             };

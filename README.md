@@ -92,8 +92,9 @@ You need to provide the path to the configuration file with the `-c` flag. `-c c
 - `build` generates a runnable Cargo project under `.cyberfabric/<CONFIG_NAME>` and builds it based on the `-c`
   configuration
   provided.
-- `run` generates the same project and runs it. You can provide `-w` to enable watch mode and/or `--otel` to enable
-  OpenTelemetry.
+- `run` generates the same project and runs it. You can provide `-w` to enable watch mode, `--otel` to enable
+  OpenTelemetry, and `--fips` to enable the generated manifest's `fips` feature.
+- `build` and `run` both pass `--otel` and `--fips` through as Cargo features on the generated project manifest.
 
 The generated `src/main.rs` does not embed the config path. Instead, the generated server reads it from
 `CF_CLI_CONFIG` at runtime. The CLI sets that variable for `build` and `run`, but if you execute `.cyberfabric/<name>/`
