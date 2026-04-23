@@ -11,16 +11,11 @@ It focuses on:
 
 ## Invocation Forms
 
-The crate exposes two equivalent entrypoints:
+The crate exposes a single entrypoint:
 
-- **[`cyberfabric`]** Direct binary invocation
 - **[`cargo cyberfabric`]** Cargo subcommand form via the `cargo-cyberfabric` binary
 
-Examples:
-
-```bash
-cyberfabric init /tmp/my-app
-```
+Example:
 
 ```bash
 cargo cyberfabric init /tmp/my-app
@@ -35,7 +30,7 @@ cargo run -p cli -- init /tmp/my-app
 ## Command Tree
 
 ```text
-cyberfabric
+cargo cyberfabric
 ├── init
 ├── mod
 │   └── add
@@ -95,7 +90,7 @@ Initialize a new project from the default CyberFabric template repo or a local t
 Synopsis:
 
 ```bash
-cyberfabric init <path> [--verbose] [--local-path <PATH>] [--git <URL>] [--subfolder <NAME>] [--branch <NAME>]
+cargo cyberfabric init <path> [--verbose] [--local-path <PATH>] [--git <URL>] [--subfolder <NAME>] [--branch <NAME>]
 ```
 
 Arguments:
@@ -117,15 +112,15 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric init /tmp/cf-demo
+cargo cyberfabric init /tmp/cf-demo
 ```
 
 ```bash
-cyberfabric init /tmp/cf-demo --git https://github.com/cyberfabric/cf-template-rust --branch main --subfolder Init
+cargo cyberfabric init /tmp/cf-demo --git https://github.com/cyberfabric/cf-template-rust --branch main --subfolder Init
 ```
 
 ```bash
-cyberfabric init /tmp/cf-demo --local-path ~/dev/cf-template-rust
+cargo cyberfabric init /tmp/cf-demo --local-path ~/dev/cf-template-rust
 ```
 
 ### `mod`
@@ -139,7 +134,7 @@ Generate a module template inside an existing workspace's `modules/` directory a
 Synopsis:
 
 ```bash
-cyberfabric mod add [--path <PATH>] [--verbose] [--local-path <PATH>] [--git <URL>] [--subfolder <NAME>] [--branch <NAME>] <template>
+cargo cyberfabric mod add [--path <PATH>] [--verbose] [--local-path <PATH>] [--git <URL>] [--subfolder <NAME>] [--branch <NAME>] <template>
 ```
 
 Available templates:
@@ -172,15 +167,15 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric mod add background-worker -p /tmp/cf-demo
+cargo cyberfabric mod add background-worker -p /tmp/cf-demo
 ```
 
 ```bash
-cyberfabric mod add rest-gateway -p /tmp/cf-demo --verbose
+cargo cyberfabric mod add rest-gateway -p /tmp/cf-demo --verbose
 ```
 
 ```bash
-cyberfabric mod add api-db-handler -p /tmp/cf-demo --local-path ~/dev/cf-template-rust --subfolder Modules
+cargo cyberfabric mod add api-db-handler -p /tmp/cf-demo --local-path ~/dev/cf-template-rust --subfolder Modules
 ```
 
 ### `config`
@@ -203,7 +198,7 @@ List workspace modules, configured modules, and optionally known system crates.
 Synopsis:
 
 ```bash
-cyberfabric config mod list -c <CONFIG> [-p <PATH>] [--system] [--verbose] [--registry <REGISTRY>]
+cargo cyberfabric config mod list -c <CONFIG> [-p <PATH>] [--system] [--verbose] [--registry <REGISTRY>]
 ```
 
 Arguments:
@@ -247,15 +242,15 @@ Built-in system module names:
 Examples:
 
 ```bash
-cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ```bash
-cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --system
+cargo cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --system
 ```
 
 ```bash
-cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --system --verbose
+cargo cyberfabric config mod list -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --system --verbose
 ```
 
 #### `config mod add`
@@ -265,7 +260,7 @@ Add or update a module entry in the config file's `modules` section.
 Synopsis:
 
 ```bash
-cyberfabric config mod add -c <CONFIG> [-p <PATH>] [--package <NAME>] [--module-version <VER>] [--default-features <BOOL>] [-F, --feature <FEATURES>]... [--dep <NAME>]... <module>
+cargo cyberfabric config mod add -c <CONFIG> [-p <PATH>] [--package <NAME>] [--module-version <VER>] [--default-features <BOOL>] [-F, --feature <FEATURES>]... [--dep <NAME>]... <module>
 ```
 
 Arguments:
@@ -294,19 +289,19 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric config mod add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config mod add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ```bash
-cyberfabric config mod add rest-gateway -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml -F json,metrics -F tracing --dep authn-resolver --dep tenant-resolver
+cargo cyberfabric config mod add rest-gateway -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml -F json,metrics -F tracing --dep authn-resolver --dep tenant-resolver
 ```
 
 ```bash
-cyberfabric config mod add credstore -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --package cf-credstore --module-version 0.4.2
+cargo cyberfabric config mod add credstore -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --package cf-credstore --module-version 0.4.2
 ```
 
 ```bash
-cyberfabric config mod add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --default-features false
+cargo cyberfabric config mod add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --default-features false
 ```
 
 #### `config mod rm`
@@ -316,7 +311,7 @@ Remove a module from the config file's `modules` section.
 Synopsis:
 
 ```bash
-cyberfabric config mod rm -c <CONFIG> [-p <PATH>] <module>
+cargo cyberfabric config mod rm -c <CONFIG> [-p <PATH>] <module>
 ```
 
 Behavior:
@@ -328,7 +323,7 @@ Behavior:
 Example:
 
 ```bash
-cyberfabric config mod rm background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config mod rm background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 #### `config mod db`
@@ -373,19 +368,19 @@ Rules:
 Examples:
 
 ```bash
-cyberfabric config mod db add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --server primary
+cargo cyberfabric config mod db add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --server primary
 ```
 
 ```bash
-cyberfabric config mod db add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb --pool-max-conns 20
+cargo cyberfabric config mod db add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb --pool-max-conns 20
 ```
 
 ```bash
-cyberfabric config mod db edit api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --pool-acquire-timeout-secs 30 --pool-test-before-acquire true
+cargo cyberfabric config mod db edit api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --pool-acquire-timeout-secs 30 --pool-test-before-acquire true
 ```
 
 ```bash
-cyberfabric config mod db rm api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config mod db rm api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ### `config db`
@@ -401,9 +396,9 @@ Subcommands:
 Synopsis:
 
 ```bash
-cyberfabric config db add  -c <CONFIG> [-p <PATH>] <name> <db-flags...>
-cyberfabric config db edit -c <CONFIG> [-p <PATH>] <name> <db-flags...>
-cyberfabric config db rm   -c <CONFIG> [-p <PATH>] <name>
+cargo cyberfabric config db add  -c <CONFIG> [-p <PATH>] <name> <db-flags...>
+cargo cyberfabric config db edit -c <CONFIG> [-p <PATH>] <name> <db-flags...>
+cargo cyberfabric config db rm   -c <CONFIG> [-p <PATH>] <name>
 ```
 
 Behavior:
@@ -419,19 +414,19 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric config db add primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb
+cargo cyberfabric config db add primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb
 ```
 
 ```bash
-cyberfabric config db edit primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --pool-max-conns 30 --pool-idle-timeout-secs 120
+cargo cyberfabric config db edit primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --pool-max-conns 30 --pool-idle-timeout-secs 120
 ```
 
 ```bash
-cyberfabric config db add local-sqlite -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine sqlite --sqlite-path /tmp/cf-demo/dev.db
+cargo cyberfabric config db add local-sqlite -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine sqlite --sqlite-path /tmp/cf-demo/dev.db
 ```
 
 ```bash
-cyberfabric config db rm primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config db rm primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ### `docs`
@@ -441,7 +436,7 @@ Resolve Rust source for a crate/module/item query from local workspace metadata,
 Synopsis:
 
 ```bash
-cyberfabric docs [--path <PATH>] [--registry <REGISTRY>] [--verbose] [--libs] [--version <VERSION>] [--clean] [<query>]
+cargo cyberfabric docs [--path <PATH>] [--registry <REGISTRY>] [--verbose] [--libs] [--version <VERSION>] [--clean] [<query>]
 ```
 
 Arguments:
@@ -482,27 +477,27 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric docs -p /tmp/cf-demo cf-modkit
+cargo cyberfabric docs -p /tmp/cf-demo cf-modkit
 ```
 
 ```bash
-cyberfabric docs -p /tmp/cf-demo --verbose tokio::sync
+cargo cyberfabric docs -p /tmp/cf-demo --verbose tokio::sync
 ```
 
 ```bash
-cyberfabric docs -p /tmp/cf-demo --libs cf-modkit
+cargo cyberfabric docs -p /tmp/cf-demo --libs cf-modkit
 ```
 
 ```bash
-cyberfabric docs --registry crates.io --version 1.0.217 serde::de::Deserialize
+cargo cyberfabric docs --registry crates.io --version 1.0.217 serde::de::Deserialize
 ```
 
 ```bash
-cyberfabric docs --clean
+cargo cyberfabric docs --clean
 ```
 
 ```bash
-cyberfabric docs --clean -p /tmp/cf-demo tokio::sync
+cargo cyberfabric docs --clean -p /tmp/cf-demo tokio::sync
 ```
 
 ### `tools`
@@ -518,7 +513,7 @@ Known tool names:
 Synopsis:
 
 ```bash
-cyberfabric tools (--all | --install <tool,...>) [--upgrade] [--yolo] [--verbose]
+cargo cyberfabric tools (--all | --install <tool,...>) [--upgrade] [--yolo] [--verbose]
 ```
 
 Arguments:
@@ -541,15 +536,15 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric tools --all
+cargo cyberfabric tools --all
 ```
 
 ```bash
-cyberfabric tools --install clippy,cargofmt --yolo
+cargo cyberfabric tools --install clippy,cargofmt --yolo
 ```
 
 ```bash
-cyberfabric tools --install rustup,clippy --upgrade --verbose
+cargo cyberfabric tools --install rustup,clippy --upgrade --verbose
 ```
 
 ### `run`
@@ -582,14 +577,14 @@ Behavior:
 - **[generates server structure]** Writes `.cyberfabric/<name>/Cargo.toml`, `.cyberfabric/<name>/.cargo/config.toml`,
   and `.cyberfabric/<name>/src/main.rs`
 - **[runtime config handoff]** The generated `src/main.rs` reads the config path from `CF_CLI_CONFIG`, and
-  `cyberfabric run` sets that environment variable automatically before invoking `cargo run`
+  `cargo cyberfabric run` sets that environment variable automatically before invoking `cargo run`
 - **[loads config dependencies]** Builds dependencies from the config and local module metadata
 - **[feature passthrough]** `--otel` and `--fips` enable the generated project's matching Cargo features
 - **[runs inside `.cyberfabric/<name>`]** Executes `cargo run` in the generated directory
 - **[watch mode]** Restarts on config changes, workspace `Cargo.toml` changes, and changes in path-based dependencies
 - **[dependency watch management]** Reconciles watched dependency paths when config dependencies change
 - **[manual generated-project execution]** If you invoke the generated project or compiled binary yourself instead of
-  using `cyberfabric run`, you must set `CF_CLI_CONFIG` manually
+  using `cargo cyberfabric run`, you must set `CF_CLI_CONFIG` manually
 
 Examples:
 
@@ -616,7 +611,7 @@ Generate a server project under `.cyberfabric/<name>/` and build it.
 Synopsis:
 
 ```bash
-cyberfabric build -c <CONFIG> [-p <PATH>] [--name <NAME>] [--otel] [--fips] [--release] [--clean]
+cargo cyberfabric build -c <CONFIG> [-p <PATH>] [--name <NAME>] [--otel] [--fips] [--release] [--clean]
 ```
 
 Arguments:
@@ -646,19 +641,19 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ```bash
-cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --release
+cargo cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --release
 ```
 
 ```bash
-cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --fips --clean
+cargo cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --otel --fips --clean
 ```
 
 ```bash
-cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --name demo-server
+cargo cyberfabric build -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --name demo-server
 ```
 
 ### `lint`
@@ -668,7 +663,7 @@ Run workspace linting helpers from the selected workspace directory.
 Synopsis:
 
 ```bash
-cyberfabric lint [-p <PATH>] [--all] [--fmt] [--clippy] [--strict] [--dylint]
+cargo cyberfabric lint [-p <PATH>] [--all] [--fmt] [--clippy] [--strict] [--dylint]
 ```
 
 Arguments:
@@ -697,23 +692,23 @@ Behavior:
 Examples:
 
 ```bash
-cyberfabric lint
+cargo cyberfabric lint
 ```
 
 ```bash
-cyberfabric lint --clippy --strict
+cargo cyberfabric lint --clippy --strict
 ```
 
 ```bash
-cyberfabric lint --fmt
+cargo cyberfabric lint --fmt
 ```
 
 ```bash
-cyberfabric lint --dylint
+cargo cyberfabric lint --dylint
 ```
 
 ```bash
-cyberfabric lint -p /tmp/cf-demo --dylint
+cargo cyberfabric lint -p /tmp/cf-demo --dylint
 ```
 
 ### `test`
@@ -723,7 +718,7 @@ Declared in the CLI but **currently unimplemented**.
 Synopsis:
 
 ```bash
-cyberfabric test [--e2e] [--module <NAME>] [--coverage]
+cargo cyberfabric test [--e2e] [--module <NAME>] [--coverage]
 ```
 
 Arguments:
@@ -741,32 +736,32 @@ Current status:
 ### Create a workspace and run it
 
 ```bash
-cyberfabric init /tmp/cf-demo
-cyberfabric mod add background-worker -p /tmp/cf-demo
-cyberfabric config mod add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric init /tmp/cf-demo
+cargo cyberfabric mod add background-worker -p /tmp/cf-demo
+cargo cyberfabric config mod add background-worker -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 cargo cyberfabric run -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
 ```
 
 ### Add a module and wire a shared DB server
 
 ```bash
-cyberfabric mod add api-db-handler -p /tmp/cf-demo
-cyberfabric config db add primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb
-cyberfabric config mod add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
-cyberfabric config mod db add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --server primary
+cargo cyberfabric mod add api-db-handler -p /tmp/cf-demo
+cargo cyberfabric config db add primary -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --engine postgres --host localhost --port 5432 --user app --password '${DB_PASSWORD}' --dbname appdb
+cargo cyberfabric config mod add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml
+cargo cyberfabric config mod db add api-db-handler -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --server primary
 cargo cyberfabric run -p /tmp/cf-demo -c /tmp/cf-demo/config/quickstart.yml --watch
 ```
 
 ### Inspect source for a dependency
 
 ```bash
-cyberfabric docs --verbose tokio::sync
+cargo cyberfabric docs --verbose tokio::sync
 ```
 
 ## Important Caveats
 
 - **[`-c/--config` is mandatory]** For `config ...`, `build`, and `run`
-- **[generated servers expect `CF_CLI_CONFIG`]** `cyberfabric run` sets it for you, but manual execution of
+- **[generated servers expect `CF_CLI_CONFIG`]** `cargo cyberfabric run` sets it for you, but manual execution of
   `.cyberfabric/<name>/` or its compiled binary must provide it explicitly
 - **[`lint --dylint` needs the feature build]** Without the `dylint-rules` feature enabled, it currently reaches
   an error
@@ -781,22 +776,22 @@ cyberfabric docs --verbose tokio::sync
 ## Quick Reference
 
 ```bash
-cyberfabric init <path>
-cyberfabric mod add <background-worker|api-db-handler|rest-gateway> [-p <workspace>]
+cargo cyberfabric init <path>
+cargo cyberfabric mod add <background-worker|api-db-handler|rest-gateway> [-p <workspace>]
 
-cyberfabric config mod list [-p <workspace>] -c <config>
-cyberfabric config mod add <module> [-p <workspace>] -c <config>
-cyberfabric config mod rm <module> [-p <workspace>] -c <config>
-cyberfabric config mod db add <module> [-p <workspace>] -c <config> ...
-cyberfabric config mod db edit <module> [-p <workspace>] -c <config> ...
-cyberfabric config mod db rm <module> [-p <workspace>] -c <config>
+cargo cyberfabric config mod list [-p <workspace>] -c <config>
+cargo cyberfabric config mod add <module> [-p <workspace>] -c <config>
+cargo cyberfabric config mod rm <module> [-p <workspace>] -c <config>
+cargo cyberfabric config mod db add <module> [-p <workspace>] -c <config> ...
+cargo cyberfabric config mod db edit <module> [-p <workspace>] -c <config> ...
+cargo cyberfabric config mod db rm <module> [-p <workspace>] -c <config>
 
-cyberfabric config db add <name> [-p <workspace>] -c <config> ...
-cyberfabric config db edit <name> [-p <workspace>] -c <config> ...
-cyberfabric config db rm <name> [-p <workspace>] -c <config>
+cargo cyberfabric config db add <name> [-p <workspace>] -c <config> ...
+cargo cyberfabric config db edit <name> [-p <workspace>] -c <config> ...
+cargo cyberfabric config db rm <name> [-p <workspace>] -c <config>
 
-cyberfabric docs [-p <path>] [--version <version>] [--clean] [<query>]
-cyberfabric lint [-p <workspace>] [--all] [--clippy] [--strict] [--dylint]
-cyberfabric tools --all
-cyberfabric run [-p <workspace>] -c <config> [--name <name>] [--watch]
-cyberfabric build [-p <workspace>] -c <config> [--name <name>]
+cargo cyberfabric docs [-p <path>] [--version <version>] [--clean] [<query>]
+cargo cyberfabric lint [-p <workspace>] [--all] [--clippy] [--strict] [--dylint]
+cargo cyberfabric tools --all
+cargo cyberfabric run [-p <workspace>] -c <config> [--name <name>] [--watch]
+cargo cyberfabric build [-p <workspace>] -c <config> [--name <name>]

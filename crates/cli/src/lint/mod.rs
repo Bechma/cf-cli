@@ -1,4 +1,4 @@
-use crate::common::parse_and_chdir;
+use crate::common::{cargo_cmd, parse_and_chdir};
 use anyhow::{Context, Result};
 use clap::Args;
 
@@ -7,7 +7,6 @@ use std::collections::BTreeSet;
 #[cfg(feature = "dylint-rules")]
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
 
 #[cfg(feature = "dylint-rules")]
 mod ensure_toolchain_installed_shared {
@@ -60,7 +59,7 @@ impl LintArgs {
             all,
             fmt: self.fmt,
             clippy: self.clippy || all,
-            dylint: self.dylint || all,
+            dylint: self.dylint || (all && cfg!(feature = "dylint-rules")),
         }
     }
 
@@ -83,12 +82,6 @@ impl LintArgs {
             run_clippy(self.strict)?;
         }
 
-        #[cfg(feature = "dylint-rules")]
-        if selection.dylint {
-            run_dylint()?;
-        }
-
-        #[cfg(not(feature = "dylint-rules"))]
         if selection.dylint {
             run_dylint()?;
         }
@@ -98,8 +91,7 @@ impl LintArgs {
 }
 
 fn run_fmt() -> Result<()> {
-    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
-    let mut cmd = Command::new(cargo);
+    let mut cmd = cargo_cmd()?;
     cmd.args(["fmt", "--check", "--all"]);
 
     let status = cmd.status().context("failed to run `cargo fmt --check`")?;
@@ -111,8 +103,7 @@ fn run_fmt() -> Result<()> {
 }
 
 fn run_clippy(strict: bool) -> Result<()> {
-    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
-    let mut cmd = Command::new(cargo);
+    let mut cmd = cargo_cmd()?;
     cmd.args(["clippy", "--workspace", "--all-targets"]);
 
     // TODO Analyse the features that each crate has and try to test them against the feature set.
@@ -216,7 +207,10 @@ mod tests {
         assert!(selection.all);
         assert!(!selection.fmt);
         assert!(selection.clippy);
+        #[cfg(feature = "dylint-rules")]
         assert!(selection.dylint);
+        #[cfg(not(feature = "dylint-rules"))]
+        assert!(!selection.dylint);
     }
 
     #[test]
