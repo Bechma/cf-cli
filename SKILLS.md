@@ -668,13 +668,14 @@ Run workspace linting helpers from the selected workspace directory.
 Synopsis:
 
 ```bash
-cyberfabric lint [-p <PATH>] [--all] [--clippy] [--strict] [--dylint]
+cyberfabric lint [-p <PATH>] [--all] [--fmt] [--clippy] [--strict] [--dylint]
 ```
 
 Arguments:
 
 - **[`-p, --path <PATH>`]** Optional workspace directory; changes the current working directory while Clap parses it
-- **[`--all`]** Runs all available lint suites; this is also the default when neither `--clippy` nor `--dylint` is passed
+- **[`--all`]** Runs the default lint suites; this is also the default when neither `--fmt`, `--clippy`, nor `--dylint` is passed
+- **[`--fmt`]** Runs `cargo fmt --check --all`; if passed by itself, it disables the default implicit `--all`
 - **[`--clippy`]** Runs workspace Clippy checks; if passed by itself, it disables the default implicit `--all`
 - **[`--strict`]** Turns Clippy warnings into errors; valid only when Clippy is selected explicitly or through `--all`
 - **[`--dylint`]** Runs embedded Dylint rules against the workspace rooted at the current or selected directory
@@ -683,8 +684,9 @@ Behavior:
 
 - **[path activation]** If `-p/--path` is provided, it changes the current working directory
 - **[default lint selection]** With no explicit lint-selection flags, `lint` behaves as if `--all` was enabled
-- **[explicit selection disables default all]** Passing `--clippy` and/or `--dylint` opts into just those requested lint suites unless
+- **[explicit selection disables default all]** Passing `--fmt`, `--clippy`, and/or `--dylint` opts into just those requested lint suites unless
   `--all` is also provided
+- **[workspace formatting check]** `--fmt` runs `cargo fmt --check --all`
 - **[workspace Clippy]** Clippy runs as `cargo clippy --workspace --all-targets`
 - **[strict scope]** `--strict` is rejected unless Clippy is active through `--clippy` or `--all`
 - **[workspace-scoped dylint]** Dylint resolves the workspace from the current working directory, so `-p/--path` is the
@@ -700,6 +702,10 @@ cyberfabric lint
 
 ```bash
 cyberfabric lint --clippy --strict
+```
+
+```bash
+cyberfabric lint --fmt
 ```
 
 ```bash

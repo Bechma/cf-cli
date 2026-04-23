@@ -28,6 +28,9 @@ pub struct LintArgs {
     /// Path to the module workspace root
     #[arg(short = 'p', long, value_parser = parse_and_chdir)]
     pub path: Option<PathBuf>,
+    /// Check whether the workspace is formatted with `cargo fmt`.
+    #[arg(long)]
+    fmt: bool,
     /// Run recommended clippy rules. Follows Cargo.toml exceptions if present.
     #[arg(long)]
     clippy: bool,
@@ -45,15 +48,17 @@ include!(concat!(env!("OUT_DIR"), "/generated_libs.rs"));
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 struct EffectiveLintSelection {
     all: bool,
+    fmt: bool,
     clippy: bool,
     dylint: bool,
 }
 
 impl LintArgs {
     const fn selection(&self) -> EffectiveLintSelection {
-        let all = self.all || (!self.clippy && !self.dylint);
+        let all = self.all || (!self.fmt && !self.clippy && !self.dylint);
         EffectiveLintSelection {
             all,
+            fmt: self.fmt,
             clippy: self.clippy || all,
             dylint: self.dylint || all,
         }
@@ -69,6 +74,10 @@ impl LintArgs {
 
     pub fn run(&self) -> Result<()> {
         let selection = self.validate()?;
+
+        if selection.fmt {
+            run_fmt()?;
+        }
 
         if selection.clippy {
             run_clippy(self.strict)?;
@@ -86,6 +95,19 @@ impl LintArgs {
 
         Ok(())
     }
+}
+
+fn run_fmt() -> Result<()> {
+    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
+    let mut cmd = Command::new(cargo);
+    cmd.args(["fmt", "--check", "--all"]);
+
+    let status = cmd.status().context("failed to run `cargo fmt --check`")?;
+    if !status.success() {
+        anyhow::bail!("`cargo fmt --check` failed with exit status {status}");
+    }
+
+    Ok(())
 }
 
 fn run_clippy(strict: bool) -> Result<()> {
@@ -192,6 +214,7 @@ mod tests {
         let selection = cli.lint.selection();
 
         assert!(selection.all);
+        assert!(!selection.fmt);
         assert!(selection.clippy);
         assert!(selection.dylint);
     }
@@ -204,8 +227,22 @@ mod tests {
         let selection = cli.lint.selection();
 
         assert!(!selection.all);
+        assert!(!selection.fmt);
         assert!(!selection.clippy);
         assert!(selection.dylint);
+    }
+
+    #[test]
+    fn fmt_selection_is_explicit() {
+        let cli =
+            TestCli::try_parse_from(["cyberfabric", "--fmt"]).expect("lint args should parse");
+
+        let selection = cli.lint.selection();
+
+        assert!(!selection.all);
+        assert!(selection.fmt);
+        assert!(!selection.clippy);
+        assert!(!selection.dylint);
     }
 
     #[test]
