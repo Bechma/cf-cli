@@ -127,6 +127,18 @@ async fn main() -> Result<()> {
     run_server(config).await
 }"#;
 
+/// Returns the `cargo` binary path from the `CARGO` environment variable.
+///
+/// This variable is set automatically by Cargo when running subcommands.
+/// Because the CLI is only distributed as `cargo cyberfabric`, this variable
+/// must always be present; if it is missing we return an error instead of
+/// silently falling back.
+pub fn cargo_cmd() -> anyhow::Result<Command> {
+    env::var_os("CARGO").context(
+        "CARGO environment variable is not set — the CLI must be invoked as `cargo cyberfabric`",
+    ).map(Command::new)
+}
+
 pub fn cargo_command(
     subcommand: &str,
     path: &Path,
@@ -134,9 +146,8 @@ pub fn cargo_command(
     otel: bool,
     fips: bool,
     release: bool,
-) -> Command {
-    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
-    let mut cmd = Command::new(cargo);
+) -> anyhow::Result<Command> {
+    let mut cmd = cargo_cmd()?;
     cmd.arg(subcommand);
     cmd.env(CONFIG_PATH_ENV_VAR, config_path.as_os_str());
     if otel {
@@ -149,7 +160,7 @@ pub fn cargo_command(
         cmd.arg("-r");
     }
     cmd.current_dir(path);
-    cmd
+    Ok(cmd)
 }
 
 pub fn get_config(config_path: &Path) -> anyhow::Result<AppConfig> {
@@ -508,7 +519,9 @@ path = "src/lib.rs"
         let config_path = Path::new("/tmp/config.yml");
         let cargo_dir = Path::new("/tmp/generated");
 
-        let command = cargo_command("run", cargo_dir, config_path, true, true, true);
+        // CARGO env var is set by `cargo test`, so cargo_command succeeds.
+        let command = cargo_command("run", cargo_dir, config_path, true, true, true)
+            .expect("cargo_command should succeed when CARGO is set");
         let args = command
             .get_args()
             .map(|arg| arg.to_string_lossy().into_owned())

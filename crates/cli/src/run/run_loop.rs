@@ -38,7 +38,7 @@ impl RunLoop {
         let cargo_dir = common::generated_project_dir(&self.project_name)?;
 
         if !watch {
-            let status = cargo_run(&cargo_dir, &self.config_path)
+            let status = cargo_run(&cargo_dir, &self.config_path)?
                 .status()
                 .context("failed to run cargo")?;
             if !status.success() {
@@ -168,7 +168,7 @@ impl RunLoop {
     }
 }
 
-fn cargo_run(path: &Path, config_path: &Path) -> Command {
+fn cargo_run(path: &Path, config_path: &Path) -> anyhow::Result<Command> {
     let otel = OTEL.load(std::sync::atomic::Ordering::Relaxed);
     let fips = FIPS.load(std::sync::atomic::Ordering::Relaxed);
     let release = RELEASE.load(std::sync::atomic::Ordering::Relaxed);
@@ -177,7 +177,9 @@ fn cargo_run(path: &Path, config_path: &Path) -> Command {
 
 fn cargo_run_loop(cargo_dir: &Path, config_path: &Path, signal_rx: &mpsc::Receiver<RunSignal>) {
     'outer: loop {
-        let mut child = match cargo_run(cargo_dir, config_path).spawn() {
+        let mut child = match cargo_run(cargo_dir, config_path)
+            .and_then(|mut cmd| cmd.spawn().context("failed to spawn cargo run"))
+        {
             Ok(child) => child,
             Err(e) => {
                 eprintln!("failed to spawn cargo run: {e}");

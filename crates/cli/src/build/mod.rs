@@ -23,7 +23,7 @@ impl BuildArgs {
             self.build_run_args.otel,
             self.build_run_args.fips,
             self.build_run_args.release,
-        )
+        )?
         .status()
         .context("failed to run cargo build")?;
 

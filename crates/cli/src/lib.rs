@@ -11,7 +11,7 @@ mod test;
 mod tools;
 
 #[derive(clap::Parser)]
-#[command(version, about, long_about = None)]
+#[command(version, about)]
 #[command(propagate_version = true)]
 #[command(name = "cyberfabric")]
 pub struct Cli {
@@ -21,14 +21,23 @@ pub struct Cli {
 
 #[derive(clap::Subcommand)]
 pub enum Commands {
+    /// Initialize a new project in a non-existing folder
     Init(init::InitArgs),
+    /// Add new modules to an existing project
     Mod(r#mod::ModArgs),
+    /// Utility to modify a provided configuration file
     Config(Box<config::ConfigArgs>),
+    /// Utility to retrieve external dependency code in a token-friendly way
     Docs(docs::DocsArgs),
+    /// Orchestrate the linting process of the project
     Lint(lint::LintArgs),
+    /// Orchestrate the testing process of the project
     Test(test::TestArgs),
+    /// Handle the required or optional tools for the project
     Tools(tools::ToolsArgs),
+    /// Generate an ephemeral cargo binary based on the provided configuration file
     Run(run::RunArgs),
+    /// Same as run but stops at the build step
     Build(build::BuildArgs),
 }
 

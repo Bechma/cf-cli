@@ -1,6 +1,6 @@
 # CyberFabric CLI
 
-Command-line interface for development and management of CyberFabric modules.
+Command-line interface for the whole development cycle of CyberFabric projects.
 
 ## Quickstart
 
@@ -10,22 +10,13 @@ Command-line interface for development and management of CyberFabric modules.
 
 ### Install the CLI
 
-This workspace exposes two binaries:
-
-- `cyberfabric`
-- `cargo-cyberfabric` for the `cargo cyberfabric ...` invocation form
-
-Install both from the repository root:
+Install it from the repository root:
 
 ```bash
 cargo install --git https://github.com/cyberfabric/cf-cli
 ```
 
-After installation, you can use either form:
-
-```bash
-cyberfabric --help
-```
+After installation, you can check for:
 
 ```bash
 cargo cyberfabric --help
@@ -36,28 +27,27 @@ cargo cyberfabric --help
 First you can create a new workspace with a basic hello-world module with:
 
 ```bash
-cyberfabric init /tmp/cf-demo
+cargo cyberfabric init /tmp/cf-demo
 ```
 
 You can run it straight away and you will see in the console a hello world message:
 
 ```bash
 cd /tmp/cf-demo
-# When running or building we recommend using cargo-cyberfabric binary instead of the standalone binary.
 cargo cyberfabric run -c ./config/quickstart.yml
 ```
 
-The generated server reads its config path from the `CF_CLI_CONFIG` environment variable. `cyberfabric build` and
-`cyberfabric run` set this automatically for the generated project.
+The generated server reads its config path from the `CF_CLI_CONFIG` environment variable. `cargo cyberfabric build` and
+`cargo cyberfabric run` set this automatically for the generated project.
 
 Second, add a module to the workspace. You can choose among a set of templates: `background-worker`, `api-db-handler`,
 and `rest-gateway`. For this example we'll use background-worker:
 
 ```bash
 # bring the module to the workspace
-cyberfabric mod add background-worker
+cargo cyberfabric mod add background-worker
 # add the module to the config
-cyberfabric config mod add background-worker -c ./config/quickstart.yml
+cargo cyberfabric config mod add background-worker -c ./config/quickstart.yml
 ```
 
 Now, we run it again. We'll see every couple of seconds, the background worker printing a random Pokémon:
@@ -112,14 +102,9 @@ CF_CLI_CONFIG=/tmp/cf-demo/config/quickstart.yml cargo run --manifest-path /tmp/
 
 ### Linting
 
-- `lint` defaults to running all available lint suites for the current or selected workspace
-- `lint --clippy` runs `cargo clippy --workspace --all-targets`
-- `lint --strict` is valid when Clippy is active and upgrades Clippy warnings to errors
-- `lint -p <PATH> --dylint` runs the embedded CyberFabric Dylint rules against the workspace rooted at the current or
-  selected directory
-- Passing `--clippy` and/or `--dylint` disables the implicit default `--all` selection unless `--all` is also passed
-- `lint` uses `-p/--path` the same way as other workspace-aware commands: it changes the current working directory
-  before resolving the target workspace
+`cargo cyberfabric lint` defaults to running all available lint suites for the current or selected workspace. It
+orchestrates
+`cargo fmt` `cargo clippy` and `dylint` custom rules. It respects your custom settings from `Cargo.toml`.
 
 If the CLI is built without the `dylint-rules` feature, `lint --dylint` returns an error.
 
@@ -147,7 +132,7 @@ cargo run -p cli -- --help
 
 This project is licensed under the Apache License, Version 2.0.
 
-- Full license text: `LICENSE`
+- Full license text: [LICENSE](./LICENSE)
 - License URL: <http://www.apache.org/licenses/LICENSE-2.0>
 
 Unless required by applicable law or agreed to in writing, the software is distributed on an `AS IS` basis, without
