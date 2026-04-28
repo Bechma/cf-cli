@@ -1,3 +1,10 @@
+---
+name: cyberfabric
+description: cli reference to help with the development of cyberfabric framework. It helps with the development of
+  the framework from its initialization, adding/removing modules, modifying configuration files, build and/or run project
+  and deploy them.
+---
+
 # CyberFabric CLI Skills Guide
 
 This document summarizes the CLI implemented under `crates/cli/src`.
@@ -7,7 +14,6 @@ It focuses on:
 - **[arguments]** The supported flags and positional arguments
 - **[purpose]** What each command is meant to do
 - **[examples]** Realistic usage patterns
-- **[status]** Which commands are implemented vs currently placeholders
 
 ## Invocation Forms
 
@@ -21,11 +27,16 @@ Example:
 cargo cyberfabric init /tmp/my-app
 ```
 
-For local development in this repo:
+## Objective
 
-```bash
-cargo run -p cli -- init /tmp/my-app
-```
+This CLI is a tool for automating cyberfabric development, a Rust framework. You can get more information about it in:
+
+- CyberFabric repository main: https://github.com/cyberfabric/cyberfabric-core
+- Modkit libraries(the ones that leverage this CLI tool) are located
+  in https://github.com/cyberfabric/cyberfabric-core/tree/main/libs
+- More documentation of the project will be located in https://github.com/cyberfabric/cyberfabric-core/tree/main/docs
+
+Clone(shallow) the repo to .cyberfabric folder (create it if it doesn't exist), and use it as a reference.
 
 ## Command Tree
 
@@ -58,12 +69,12 @@ cargo cyberfabric
 
 ## Shared Argument Patterns
 
-- **[`-p, --path <PATH>`]** Optional workspace path. When provided to `config ...`, `build`, `run`, `deploy`, and `lint`, the CLI
-  immediately changes the current working directory to this directory. Relative config paths, generated project
-  locations, and workspace-scoped lint resolution then resolve from that directory. When omitted, the current working
-  directory is left unchanged.
-- **[`-c, --config <PATH>`]** Config file path. This is required for `config ...`, `build`, `run`, and `deploy` commands because
-  there is no default. For `build` and `run`, the CLI forwards this path to the generated server through the
+- **[`-p, --path <PATH>`]** Optional workspace path. When provided to `config ...`, `build`, `run`, `deploy`, and
+  `lint`, the CLI immediately changes the current working directory to this directory. Relative config paths, generated
+  project locations, and workspace-scoped lint resolution then resolve from that directory. When omitted, the current
+  working directory is left unchanged.
+- **[`-c, --config <PATH>`]** Config file path. This is required for `config ...`, `build`, `run`, and `deploy` commands
+  because there is no default. For `build` and `run`, the CLI forwards this path to the generated server through the
   `CF_CLI_CONFIG` environment variable.
 - **[`--name <NAME>`]** For `build` and `run`, overrides the generated server project and binary name that would
   otherwise default to the config filename stem.
@@ -108,7 +119,8 @@ Behavior:
 
 - **[creates target directory]** If it does not exist
 - **[fails on file path]** Errors if `<path>` already exists and is not a directory
-- **[uses directory name as project name]** The final path segment becomes the generated project name unless `--name` is provided
+- **[uses directory name as project name]** The final path segment becomes the generated project name unless `--name` is
+  provided
 - **[forces git init]** Template generation runs with Git initialization enabled
 
 Examples:
@@ -451,7 +463,7 @@ Arguments:
 - **[`--clean`]** Remove the docs cache for the selected registry before resolving
 - **[`[<query>]`]** Rust path to resolve, starting with the package name; omitted only when `--clean` is used by itself
 
-Supported query examples from the implementation:
+Supported query examples:
 
 - **[`cf-modkit`]**
 - **[`tokio::sync`]**
@@ -483,15 +495,19 @@ cargo cyberfabric docs -p /tmp/cf-demo cf-modkit
 ```
 
 ```bash
-cargo cyberfabric docs -p /tmp/cf-demo --verbose tokio::sync
+cargo cyberfabric docs cf-modkit::module
 ```
 
 ```bash
-cargo cyberfabric docs -p /tmp/cf-demo --libs cf-modkit
+cargo cyberfabric docs --verbose tokio::sync
 ```
 
 ```bash
-cargo cyberfabric docs --registry crates.io --version 1.0.217 serde::de::Deserialize
+cargo cyberfabric docs --libs cf-modkit
+```
+
+```bash
+cargo cyberfabric docs --version 1.0.217 serde::de::Deserialize
 ```
 
 ```bash
@@ -724,7 +740,8 @@ cargo cyberfabric lint [-p <PATH>] [--all] [--fmt] [--clippy] [--strict] [--dyli
 Arguments:
 
 - **[`-p, --path <PATH>`]** Optional workspace directory; changes the current working directory while Clap parses it
-- **[`--all`]** Runs the default lint suites; this is also the default when neither `--fmt`, `--clippy`, nor `--dylint` is passed
+- **[`--all`]** Runs the default lint suites; this is also the default when neither `--fmt`, `--clippy`, nor `--dylint`
+  is passed
 - **[`--fmt`]** Runs `cargo fmt --check --all`; if passed by itself, it disables the default implicit `--all`
 - **[`--clippy`]** Runs workspace Clippy checks; if passed by itself, it disables the default implicit `--all`
 - **[`--strict`]** Turns Clippy warnings into errors; valid only when Clippy is selected explicitly or through `--all`
@@ -734,10 +751,12 @@ Behavior:
 
 - **[path activation]** If `-p/--path` is provided, it changes the current working directory
 - **[default lint selection]** With no explicit lint-selection flags, `lint` behaves as if `--all` was enabled
-- **[explicit selection disables default all]** Passing `--fmt`, `--clippy`, and/or `--dylint` opts into just those requested lint suites unless
-  `--all` is also provided
+- **[explicit selection disables default all]** Passing `--fmt`, `--clippy`, and/or `--dylint` opts into just those
+  requested lint suites unless `--all` is also provided
 - **[workspace formatting check]** `--fmt` runs `cargo fmt --check --all`
-- **[workspace Clippy]** Clippy runs as `cargo clippy --workspace --all-targets --all-features`. The `--all-features` flag ensures every feature-gated code path is checked. The workspace currently has no mutually exclusive features, so enabling all features simultaneously is safe.
+- **[workspace Clippy]** Clippy runs as `cargo clippy --workspace --all-targets --all-features`. The `--all-features`
+  flag ensures every feature-gated code path is checked. The workspace currently has no mutually exclusive features, so
+  enabling all features simultaneously is safe.
 - **[strict scope]** `--strict` is rejected unless Clippy is active through `--clippy` or `--all`
 - **[workspace-scoped dylint]** Dylint resolves the workspace from the current working directory, so `-p/--path` is the
   way to lint another workspace without manually changing directories

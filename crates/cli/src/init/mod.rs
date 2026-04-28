@@ -4,7 +4,7 @@ use clap::Args;
 use std::path::PathBuf;
 
 /// Content of SKILLS.md embedded at compile time
-const SKILLS_MD_CONTENT: &str = include_str!("../../../../SKILLS.md");
+const SKILLS_MD_CONTENT: &str = include_str!("../../../../SKILL.md");
 
 /// Content of Dockerfile embedded at compile time
 const DOCKERFILE_CONTENT: &str = include_str!("../../shared/Dockerfile");
@@ -92,7 +92,7 @@ impl InitArgs {
         let agents_skills_dir = self.path.join(".agents").join("skills").join("cyberfabric");
         std::fs::create_dir_all(&agents_skills_dir)
             .context("failed to create .agents/skills/cyberfabric/ directory")?;
-        let skills_md_path = agents_skills_dir.join("SKILLS.md");
+        let skills_md_path = agents_skills_dir.join("SKILL.md");
         if !skills_md_path.exists() || self.r#override {
             std::fs::write(&skills_md_path, SKILLS_MD_CONTENT)
                 .context("failed to write SKILLS.md to .agents/skills/cyberfabric/")?;
