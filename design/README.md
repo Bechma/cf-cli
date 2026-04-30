@@ -1,48 +1,34 @@
 # CyberFabric CLI Design Proposal
 
-This folder contains a design-only proposal for extending `cargo cyberfabric`
-around project templates, a CLI-owned manifest, discovery, help, linting, tests,
-development runs, and builds. It is based on the current implementation in this
-repository and intentionally does not change Rust code.
+This folder contains a design proposal for a CLI tool for CyberFabric.
 
 # Motivation
 
-## Why we need this CLI tool for CyberFabric
+In CyberFabric we are developing a new framework for building modular applications.
+This approach allows us to design backend applications in a more structured way, however, it comes with some challenges.
 
-- ...
+There's a high cognitive complexity for any new user of the framework, regardless of his background.
+This CLI tool pretends to be an opinionated but yet flexible tool to help users to build their applications.
+For most of the application life cycle, from scaffolding a simple app, to the orchestration of a bunch of applications.
 
-## What this tool do
+We are not reinventing the wheel with this, specifically in Rust, we have a good ecosystem of tooling that helps the
+developer during app development. The idea is to orchestrate the existing tooling, NOT replacing it.
 
-- Help on the project scaffolding
-- It will help on the lifecycle software development
-- ...
-
-## What this tool does NOT do
-
-...
-
-## What this tool will not do
-
-...
-
-## Scope of the current tooling in Rust
-
-### Cargo
-
-- Creates simple hello world main.rs or lib.rs
-- ...
+By using this tool, the developer can focus on writing modules and the business logic that it's the relevant part.
+Cyberfabric libraries(Modkit*) will leverage the framework runtime, system modules will provide generic functionality
+to the application and Cyberfabric CLI(this tool) will provide a way to orchestrate all development tooling.
 
 ## Table of Contents
 
-1. [Manifest and Configuration](./01-manifest-and-config.md)
-2. [Template Generation](./02-template-generation.md)
-3. [List and Inspection](./03-list-and-inspection.md)
-4. [Help and Docs](./04-help-and-docs.md)
-5. [Lint](./05-lint.md)
-6. [Test](./06-test.md)
-7. [Run for Development](./07-run-dev.md)
-8. [Build and Package](./08-build-and-package.md)
-9. [Implementation Plan](./09-implementation-plan.md)
+1. [Manifest and Configuration](./v1/01-manifest-and-config.md)
+2. [Template Generation](./v1/02-template-generation.md)
+3. [List and Inspection](./v1/03-list-and-inspection.md)
+4. [Help and Docs](./v1/04-help-and-docs.md)
+5. [Lint](./v1/05-lint.md)
+6. [Test](./v1/06-test.md)
+7. [Run for Development](./v1/07-run-dev.md)
+8. [Build and Package](./v1/08-build-and-package.md)
+9. [Implementation Plan](./v1/09-implementation-plan.md)
 
 ## Design Goals
 
